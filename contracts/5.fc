@@ -30,7 +30,8 @@
   tuple result = empty_tuple();
   while ( i < n + k ) {
     int fib_next = fib_prev + fib_curr;
-    result~tpush(fib_next);
+    ;;result~tpush(fib_next);
+    result = cons(fib_next, result);
     fib_prev = fib_curr;
     fib_curr = fib_next;
     i += 1;
