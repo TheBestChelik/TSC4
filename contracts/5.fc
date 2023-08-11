@@ -18,6 +18,24 @@
 
 ;; testable
 (tuple) fibonacci_sequence (int n, int k) method_id {
-  return null();
+  int fib_prev = 0;
+  int fib_curr = 1;
+  int i = 2;
+  while(i<n){
+    int fib_next = fib_prev + fib_curr;
+    fib_prev = fib_curr;
+    fib_curr = fib_next;
+    i+=1;
+  }
+  tuple result = empty_tuple();
+  while(i<n+k){
+    fib_next = fib_prev + fib_curr;
+    fib_next.tpush(result);
+    fib_prev = fib_curr;
+    fib_curr = fib_next;
+    i+=1;
+  }
+
+  return result;
 }
 
