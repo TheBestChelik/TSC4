@@ -26,5 +26,5 @@
     }
   }
 
-  return begin_cell().end_cell();
+  return null();
 }
