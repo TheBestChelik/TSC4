@@ -29,7 +29,7 @@
     }
     int temp = a;
     a = b;
-    b = temp + a;
+    b = temp + b;
     i += 1;
   }
   return fibonacci_sequence;
