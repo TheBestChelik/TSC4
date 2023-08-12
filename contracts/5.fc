@@ -18,19 +18,19 @@
 
 ;; testable
 (tuple) fibonacci_sequence (int n, int k) method_id {
-  tuple fibonacci_sequence = empty_tuple();
+  tuple fib = empty_tuple();
 
   int a = 0;
   int b = 1;
   int i = 0;
   while (i < n + k ) {
     if (i >= n) {
-      fibonacci_sequence = fibonacci_sequence.tpush(a);
+      fib = fib.tpush(a);
     }
     int temp = a;
     a = b;
     b = temp + b;
     i += 1;
   }
-  return fibonacci_sequence;
+  return fib;
 }
