@@ -32,5 +32,6 @@
     b = temp + b;
     i += 1;
   }
+  ~dump(fib);
   return fib;
 }
