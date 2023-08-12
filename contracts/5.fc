@@ -32,6 +32,7 @@
     b = temp + b;
     i += 1;
   }
-  ~dump(fib);
-  return fib;
+  ;;~dump(fib);
+  tuple reversed_t = reverse_tuple(fib);
+  return reversed_t;
 }
