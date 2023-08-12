@@ -32,6 +32,5 @@
     b = temp + b;
     i += 1;
   }
-  return empty_tuple();
-  ;;return fib;
+  return fib;
 }
