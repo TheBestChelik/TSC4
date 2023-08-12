@@ -18,24 +18,19 @@
 
 ;; testable
 (tuple) fibonacci_sequence (int n, int k) method_id {
-  int fib_prev = 0;
-  int fib_curr = 1;
-  int i = 2;
-  while ( i < n ) {
-    int fib_next = fib_prev + fib_curr;
-    fib_prev = fib_curr;
-    fib_curr = fib_next;
-    i += 1;
-  }
-  tuple result = empty_tuple();
-  while ( i < n + k ) {
-    int fib_next = fib_prev + fib_curr;
-    ;;result~tpush(fib_next);
-    result = cons(fib_next, result);
-    fib_prev = fib_curr;
-    fib_curr = fib_next;
-    i += 1;
-  }
+  tuple fibonacci_sequence = empty_tuple();
 
-  return result;
+  int a = 0;
+  int b = 1;
+  int i = 0;
+  while (i < n + k ) {
+    if (i >= n) {
+      fibonacci_sequence~tpush(a);
+    }
+    int temp = a;
+    a = b;
+    b = temp + a;
+    i += 1;
+  }
+  return fibonacci_sequence;
 }
