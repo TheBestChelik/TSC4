@@ -26,10 +26,13 @@
   while (i < n + k ) {
     if (i >= n) {
       fib~tpush(a);
+            
     }
     int temp = a;
     a = b;
-    b = temp + b;
+    if (i < 369){
+      b = temp + b;
+    }
     i += 1;
   }
   return fib;
