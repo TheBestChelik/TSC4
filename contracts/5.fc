@@ -15,9 +15,20 @@
 
 () recv_internal() {
 }
+forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP";
+int tuple_length (tuple t) asm "TLEN";
+forall X -> (tuple) to_tuple (X x) asm "NOP";
+(tuple) reverse_tuple (tuple t1) {
+  tuple t2 = empty_tuple();
+  repeat (t1.tuple_length()) {
+    var value = t1~tpop();
+    t2~tpush(value);
+  }
+  return t2;
+}
 
-;; testable
 (tuple) fibonacci_sequence (int n, int k) method_id {
+    
   tuple fib = empty_tuple();
 
   int a = 0;
@@ -32,7 +43,6 @@
     b = temp + b;
     i += 1;
   }
-  ;;~dump(fib);
   tuple reversed_t = reverse_tuple(fib);
   return reversed_t;
 }
