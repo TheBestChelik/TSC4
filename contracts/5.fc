@@ -25,8 +25,7 @@
   int i = 0;
   while (i < n + k ) {
     if (i >= n) {
-      a~tpush(fib);
-      ;;fib = fib.tpush(a);
+      fib~tpush(a);
     }
     int temp = a;
     a = b;
