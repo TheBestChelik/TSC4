@@ -25,12 +25,14 @@
   int i = 0;
   while (i < n + k ) {
     if (i >= n) {
-      fib = fib.tpush(a);
+      a~tpush(fib);
+      ;;fib = fib.tpush(a);
     }
     int temp = a;
     a = b;
     b = temp + b;
     i += 1;
   }
-  return fib;
+  return empty_tuple();
+  ;;return fib;
 }
