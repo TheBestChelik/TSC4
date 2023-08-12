@@ -12,19 +12,20 @@
 ;; testable
 (cell) find_branch_by_hash(int hash, cell tree) method_id {
   if (tree.cell_null?()){
-    return null();
+    return begin_cell().end_cell();
   }
   if (tree.cell_hash() == hash){
     return tree;
   }
-  slice msg = tree.begin_parse();
-  while (msg.slice_refs_empty?() != -1) { ;; we should remind that -1 is true
-    cell inner_cell = msg~load_ref(); ;; load cell from slice msg
+  ;;slice msg = tree.begin_parse();
+  ;;while (msg.slice_refs_empty?() != -1) { ;; we should remind that -1 is true
+  while(cell.remaining_refs()){
+    cell inner_cell = cell~load_ref(); ;; load cell from slice msg
     cell found_branch = find_branch_by_hash(hash, inner_cell);
     if (found_branch.cell_null?() != -1){
       return found_branch;
     }
   }
 
-  return null();
+  return begin_cell().end_cell();
 }
