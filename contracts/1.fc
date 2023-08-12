@@ -12,7 +12,7 @@
 ;; testable
 (cell) find_branch_by_hash(int hash, cell tree) method_id {
   if (tree.cell_null?()){
-    return begin_cell().end_cell();
+    return null();
   }
   if (tree.cell_hash() == hash){
     return tree;
