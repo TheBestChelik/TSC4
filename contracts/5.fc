@@ -25,7 +25,7 @@
   int i = 0;
   while (i < n + k ) {
     if (i >= n) {
-      fib~tpush(a);
+      fib~push_back(a);
     }
     int temp = a;
     a = b;
