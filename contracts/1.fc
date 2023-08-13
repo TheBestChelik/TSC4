@@ -8,24 +8,20 @@
 
 () recv_internal() {
 }
-(int) tlen (tuple t) asm "TLEN";
 ;; testable
 (cell) find_branch_by_hash(int hash, cell tree) method_id {
   if (tree.cell_null?()){
-    return begin_cell().end_cell();
+    return null();
   }
-    
-  tuple queue = empty_tuple();
-  queue~tpush(tree);
-  while ( queue.tlen() != 0 ){
-    cell node = queue~list_next();
-    if (node.cell_hash() == hash){
-      return node;
-    }
-    slice msg = node.begin_parse();
-    while (msg.slice_refs_empty?() != -1) {
-      cell inner_cell = msg~load_ref();
-      queue~tpush(inner_cell);
+  if (tree.cell_hash() == hash){
+    return tree;
+  }
+  slice msg = tree.begin_parse();
+  while (msg.slice_refs_empty?() != -1) { ;; we should remind that -1 is true
+    cell inner_cell = msg~load_ref(); ;; load cell from slice msg
+    cell found_branch = find_branch_by_hash(hash, inner_cell);
+    if (found_branch.cell_null?() != -1){
+      return found_branch;
     }
   }
 
