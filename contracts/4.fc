@@ -57,9 +57,9 @@ forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP";
   while (stack_res.tlen() != 1){
     if (temp.is_null()) {
       slice slc = stack_res~tpop();
-      temp = begin_cell().store_slice(slc).end_cell();
+      temp = begin_cell().store_uint(0,32).store_slice(slc).end_cell();
     } else {
-      cell newCell = begin_cell().store_slice(stack_res~tpop()).store_ref(temp).end_cell();
+      cell newCell = begin_cell().store_uint(0,32).store_slice(stack_res~tpop()).store_ref(temp).end_cell();
       temp = newCell;
     }
   }
@@ -90,7 +90,6 @@ forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP";
 
     slice s_decr = decrypt(s_encr,shift_amount);
   }
-
   return stringTail(stack_res);
 
 }
