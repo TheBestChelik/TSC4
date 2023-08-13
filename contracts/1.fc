@@ -8,7 +8,7 @@
 
 () recv_internal() {
 }
-
+(int) tlen (tuple t) asm "TLEN";
 ;; testable
 (cell) find_branch_by_hash(int hash, cell tree) method_id {
   if (tree.cell_null?()){
