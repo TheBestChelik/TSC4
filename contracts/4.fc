@@ -9,6 +9,7 @@
 () recv_internal() {
 }
 forall X -> int is_null (X x) asm "ISNULL";
+(int) tlen (tuple t) asm "TLEN";
 
 forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP"; 
 (slice) encrypt (slice s, int shift_amount) {
