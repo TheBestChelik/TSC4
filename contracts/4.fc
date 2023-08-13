@@ -114,6 +114,7 @@ forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP";
     slice s = stack~pop_back().begin_parse();
     if( b == 0){
       s~skip_bits(32);
+      b += 1;
     }
     repeat (s.slice_refs()) {
       stack~push_back(s~load_ref());
