@@ -71,7 +71,7 @@ forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP";
 ;; testable
 (cell) caesar_cipher_encrypt(int shift, cell text) method_id {
 
-  int shift_amount = shift % 26;
+  int shift_amount = abs(shift) % 26;
 
   tuple stack_res = empty_tuple();
 
@@ -101,7 +101,7 @@ forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP";
 
 ;; testable
 (cell) caesar_cipher_decrypt(int shift, cell text) method_id {
-  int shift_amount = shift % 26;
+  int shift_amount = abs(shift) % 26;
 
   tuple stack_res = empty_tuple();
 
