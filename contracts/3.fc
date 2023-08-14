@@ -20,7 +20,55 @@
 }
 
 ;; testable
+forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP";
+forall X -> int is_null (X x) asm "ISNULL";
+forall X -> (tuple, ()) push_back (tuple tail, X head) asm "CONS";
+forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
-  return begin_cell().end_cell();
+  tuple stack = null();
+  int lenFlag = bitCount(flag);
+  int lenValue = bitCount(value);
+  stack~push_back(linked_list);
+  while (~ stack.is_null()) {
+    slice s = stack~pop_back().begin_parse();
+
+    repeat (s.slice_refs()) {
+      stack~push_back(s~load_ref());
+    }
+    builder copy = begin_cell();
+        
+    int bitNum = 0;
+    int maxLen = s.slice_bits();
+    builder remainingBuild = begin_cell();
+    while (~ s.slice_empty?() ){
+      ;;while ( bitNum + lenFlag <= maxLen) {
+      if (maxLen - bitNum >= lenFlag){
+        int read = s.preload_uint(lenFlag);
+        if (read == flag){
+          bitNum += lenFlag;
+          s~skip_bits(lenFlag);
+          copy~store_uint(value, lenValue);
+        } else {
+          bitNum += 1;
+          int t = s~load_uint(1);
+          copy~store_uint(t, 1);
+        }
+      } else {
+        int rem = maxLen - bitNum; 
+        ~dump(rem);
+        int t = s~load_uint(rem);
+        remainingBuild~store_uint(t, rem);
+      }
+    }
+    cell substituted = copy.end_cell();
+    return substituted;
+    slice remSlice = remainingBuild.end_cell().begin_parse();
+    ;;~dump(copiedSlice);
+    ;;~dump(remSlice);
+    ;;~dump(s);
+
+
+  }
+  return begin_cell().end_cell(); 
 }
 
