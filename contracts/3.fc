@@ -18,6 +18,17 @@
 
 () recv_internal() {
 }
+(int) bitCount(int n){
+  if (n == 0){
+    return 1;
+  }
+  int bit_count = 0;
+  while( n > 0 ){
+    bit_count += 1;
+    n = n >> 1;
+  }
+  return bit_count;
+}
 
 ;; testable
 forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP";
