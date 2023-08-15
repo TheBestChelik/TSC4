@@ -116,9 +116,12 @@ tuple cdr(tuple list) asm "CDR";
         int maxLen = s.slice_bits();
         int sizePrev = prevBlock.slice_bits();
         int BitNumprev = 0;
+        
         while (~ s.slice_empty?() ){
             
             while (~ prevBlock.slice_empty?()){ ;;reading prev block
+                ;;~dump(s);
+                ;;~dump(prevBlock);
                 int readPrev = prevBlock.preload_uint(sizePrev - BitNumprev);
                 int readNew = s.preload_uint(lenFlag - sizePrev - BitNumprev);
                 int read = BinMerge(readPrev,readNew);
@@ -128,7 +131,7 @@ tuple cdr(tuple list) asm "CDR";
                     (stack_res, StackLen) = AddBits(stack_res,StackLen,value,lenValue);
                 } else {
                     BitNumprev += 1;
-                    int t = s~load_uint(1);
+                    int t = prevBlock~load_uint(1);
                     (stack_res, StackLen) = AddBits(stack_res, StackLen, t,1);
                 }
             }
@@ -150,7 +153,9 @@ tuple cdr(tuple list) asm "CDR";
                 prevBlock = s;
                 s~skip_bits(maxLen - bitNum);
             }
+            
         }
+        
     }
     int sizePrev = prevBlock.slice_bits();
     if (sizePrev != 0){
