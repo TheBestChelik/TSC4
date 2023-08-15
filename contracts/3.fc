@@ -121,13 +121,19 @@ tuple cdr(tuple list) asm "CDR";
             
             while (~ prevBlock.slice_empty?()){ ;;reading prev block
                 ;;~dump(s);
-                ;;~dump(prevBlock);
+                
+            
                 int readPrev = prevBlock.preload_uint(sizePrev - BitNumprev);
-                int readNew = s.preload_uint(lenFlag - sizePrev - BitNumprev);
+                ;; ~dump(lenFlag);
+                ;;~dump(sizePrev);
+                ;;~dump(BitNumprev);
+                int readNew = s.preload_uint(lenFlag - (sizePrev - BitNumprev));
                 int read = BinMerge(readPrev,readNew);
+            
                 if (read == flag){
+                
                     prevBlock~skip_bits(sizePrev - BitNumprev);
-                    s~skip_bits(lenFlag - sizePrev - BitNumprev);
+                    s~skip_bits(lenFlag - (sizePrev - BitNumprev));
                     (stack_res, StackLen) = AddBits(stack_res,StackLen,value,lenValue);
                 } else {
                     BitNumprev += 1;
