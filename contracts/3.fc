@@ -74,7 +74,7 @@ forall X -> tuple cons(X head, tuple tail) asm "CONS";
 
 (cell) CombineBlocks(tuple stack_res, int StackLen){
 
-
+    
     cell temp = null();
     if (StackLen == 1){
         builder bldr = stack_res~list_next();
@@ -84,14 +84,13 @@ forall X -> tuple cons(X head, tuple tail) asm "CONS";
     while (StackLen != 1){
         StackLen -= 1;
         if (temp.is_null()) {
-            temp = stack_res~list_next();
+            temp = stack_res~list_next().end_cell();
         } else {
             cell newCell = stack_res~list_next().store_ref(temp).end_cell();
             temp = newCell;
         }
     }
     cell result = stack_res~list_next().store_ref(temp).end_cell();
-
     return result;
 }
 
@@ -160,6 +159,7 @@ tuple cdr(tuple list) asm "CDR";
     }
     cell result = CombineBlocks(stack_res,StackLen);
     slice s = result.begin_parse();
+ 
     return result;
 }
 
