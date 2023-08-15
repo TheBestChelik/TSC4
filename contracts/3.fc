@@ -4,7 +4,8 @@
   first chunk stored to the root cell, next one to the cell in ref and so on;
   each cell can have only one ref. 
   Write the method that find and replaces one flags in the binary string
-  with another value. Flags and values can be can be of any length, but
+  with another va
+  lue. Flags and values can be can be of any length, but
   strictly up to 128 bits. The method must replace every flag it finds.
   Flag and the value to be replaced is guaranteed to be greater than 0.
   Lets give a simple example. We have the target flag 101110101 and the value
@@ -19,67 +20,140 @@
 () recv_internal() {
 }
 (int) bitCount(int n){
-  if (n == 0){
-    return 1;
-  }
-  int bit_count = 0;
-  while( n > 0 ){
-    bit_count += 1;
-    n = n >> 1;
-  }
-  return bit_count;
+    if (n == 0){
+        return 1;
+    }
+    int bit_count = 0;
+    while( n > 0 ){
+        bit_count += 1;
+        n = n >> 1;
+    }
+    return bit_count;
 }
 
-;; testable
-forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP";
-forall X -> int is_null (X x) asm "ISNULL";
-forall X -> (tuple, ()) push_back (tuple tail, X head) asm "CONS";
-forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
-(cell) find_and_replace(int flag, int value, cell linked_list) method_id {
-  tuple stack = null();
-  int lenFlag = bitCount(flag);
-  int lenValue = bitCount(value);
-  stack~push_back(linked_list);
-  while (~ stack.is_null()) {
-    slice s = stack~pop_back().begin_parse();
+(int, int) SeparateBits(int num, int len1, int len2){
+    int first_bit_mask = ( 1 << len1 ) - 1;
+    int second_bits_mask = ( 1 << len2 ) - 1;
 
-    repeat (s.slice_refs()) {
-      stack~push_back(s~load_ref());
+    ;;tuple res = empty_tuple();
+    ;;res~tpush(( num >> len2 ) & first_bit_mask);
+    ;;res~tpush(num & second_bits_mask);
+    int part1 = ( num >> len2 ) & first_bit_mask;
+    int part2 = num & second_bits_mask;
+    return  (part1, part2);
+}
+(tuple, int) AddBits(tuple stack_res, int lenStack, int newBits, int len){
+    builder b = stack_res~list_next();
+    int ReamainingBits = 1023 - b.builder_bits();
+    if ( ReamainingBits >= len ){
+        b~store_uint(newBits, len); 
+        stack_res = b.cons(stack_res);
+    } else {
+        int n1 = 0;
+        int n2 = 0;
+        (n1, n2) = SeparateBits(newBits,ReamainingBits, len - ReamainingBits);
+        b~store_uint(n1, ReamainingBits);
+        stack_res = b.cons(stack_res);
+        builder newBuilder = begin_cell().store_uint(n2, len - ReamainingBits);
+        stack_res = newBuilder.cons(stack_res);
+        lenStack += 1;
     }
-    builder copy = begin_cell();
-        
-    int bitNum = 0;
-    int maxLen = s.slice_bits();
-    builder remainingBuild = begin_cell();
-    while (~ s.slice_empty?() ){
-      ;;while ( bitNum + lenFlag <= maxLen) {
-      if (maxLen - bitNum >= lenFlag){
-        int read = s.preload_uint(lenFlag);
-        if (read == flag){
-          bitNum += lenFlag;
-          s~skip_bits(lenFlag);
-          copy~store_uint(value, lenValue);
+    return (stack_res , lenStack);
+}
+
+(int) BinMerge (int A, int B){
+    return ( A << bitCount(B) ) + B;
+}
+
+
+(cell) CombineBlocks(tuple stack_res, int StackLen){
+
+
+    cell temp = null();
+    if (StackLen == 1){
+        builder bldr = stack_res~list_next();
+        cell result = bldr.end_cell();
+        return result;
+    }
+    while (StackLen != 1){
+        StackLen -= 1;
+        if (temp.is_null()) {
+            temp = stack_res~list_next();
         } else {
-          bitNum += 1;
-          int t = s~load_uint(1);
-          copy~store_uint(t, 1);
+            cell newCell = stack_res~list_next().store_ref(temp).end_cell();
+            temp = newCell;
         }
-      } else {
-        int rem = maxLen - bitNum; 
-        ~dump(rem);
-        int t = s~load_uint(rem);
-        remainingBuild~store_uint(t, rem);
-      }
     }
-    cell substituted = copy.end_cell();
-    return substituted;
-    slice remSlice = remainingBuild.end_cell().begin_parse();
-    ;;~dump(copiedSlice);
-    ;;~dump(remSlice);
-    ;;~dump(s);
+    cell result = stack_res~list_next().store_ref(temp).end_cell();
 
+    return result;
+}
 
-  }
-  return begin_cell().end_cell(); 
+tuple cdr(tuple list) asm "CDR";
+(cell) find_and_replace(int flag, int value, cell linked_list) method_id {
+    tuple stack_res = null();
+    builder bldr = begin_cell();
+    stack_res = bldr.cons(stack_res);
+    int StackLen = 1;
+    tuple stack = null();
+    int lenFlag = bitCount(flag);
+    int lenValue = bitCount(value);
+    stack~push_back(linked_list);
+    slice prevBlock = begin_cell().end_cell().begin_parse();
+    while (~ stack.is_null()) {
+        slice s = stack~pop_back().begin_parse();
+
+        repeat (s.slice_refs()) {
+            stack~push_back(s~load_ref());
+        }
+        
+        int bitNum = 0;
+        int maxLen = s.slice_bits();
+        int sizePrev = prevBlock.slice_bits();
+        int BitNumprev = 0;
+        while (~ s.slice_empty?() ){
+            
+            while (~ prevBlock.slice_empty?()){ ;;reading prev block
+                int readPrev = prevBlock.preload_uint(sizePrev - BitNumprev);
+                int readNew = s.preload_uint(lenFlag - sizePrev - BitNumprev);
+                int read = BinMerge(readPrev,readNew);
+                if (read == flag){
+                    prevBlock~skip_bits(sizePrev - BitNumprev);
+                    s~skip_bits(lenFlag - sizePrev - BitNumprev);
+                    (stack_res, StackLen) = AddBits(stack_res,StackLen,value,lenValue);
+                } else {
+                    BitNumprev += 1;
+                    int t = s~load_uint(1);
+                    (stack_res, StackLen) = AddBits(stack_res, StackLen, t,1);
+                }
+            }
+            
+            if (maxLen - bitNum >= lenFlag){;; reading new block
+                int read = s.preload_uint(lenFlag);
+                
+                if (read == flag){
+                    bitNum += lenFlag;
+                    s~skip_bits(lenFlag);
+                    
+                    (stack_res, StackLen) = AddBits(stack_res, StackLen ,value,lenValue);
+                } else {
+                    bitNum += 1;
+                    int t = s~load_uint(1);
+                    (stack_res, StackLen) = AddBits(stack_res, StackLen, t,1);
+                }
+            } else { ;;block cant be read till end, leaving it for nex cycle
+                prevBlock = s;
+                s~skip_bits(maxLen - bitNum);
+            }
+        }
+    }
+    int sizePrev = prevBlock.slice_bits();
+    if (sizePrev != 0){
+        int t = prevBlock~load_uint(sizePrev);
+        (stack_res, StackLen) = AddBits(stack_res, StackLen ,t , sizePrev);
+    }
+    cell result = CombineBlocks(stack_res,StackLen);
+    slice s = result.begin_parse();
+    return result;
 }
 
