@@ -40,10 +40,6 @@ forall X -> tuple cons(X head, tuple tail) asm "CONS";
 (int, int) SeparateBits(int num, int len1, int len2){
     int first_bit_mask = ( 1 << len1 ) - 1;
     int second_bits_mask = ( 1 << len2 ) - 1;
-
-    ;;tuple res = empty_tuple();
-    ;;res~tpush(( num >> len2 ) & first_bit_mask);
-    ;;res~tpush(num & second_bits_mask);
     int part1 = ( num >> len2 ) & first_bit_mask;
     int part2 = num & second_bits_mask;
     return  (part1, part2);
@@ -96,11 +92,11 @@ forall X -> tuple cons(X head, tuple tail) asm "CONS";
 
 tuple cdr(tuple list) asm "CDR";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
-    ~dump(value);
-    ~dump(flag);
+    ;; ~dump(value);
+    ;; ~dump(flag);
     tuple stack_res = null();
-    builder bldr = begin_cell();
-    stack_res = bldr.cons(stack_res);
+    ;;builder bldr = begin_cell();
+    stack_res = begin_cell().cons(stack_res);
     int StackLen = 1;
     tuple stack = null();
     int lenFlag = bitCount(flag);
@@ -121,15 +117,11 @@ tuple cdr(tuple list) asm "CDR";
         while (~ s.slice_empty?() ){
             
             while (~ prevBlock.slice_empty?()){ ;;reading prev block
-                ;;~dump(s);
-                
-            
                 int readPrev = prevBlock.preload_uint(sizePrev - BitNumprev);
-                ;;~dump(lenFlag);
-                ;;~dump(sizePrev);
-                ;;~dump(BitNumprev);
                 int readNew = s.preload_uint(lenFlag - (sizePrev - BitNumprev));
-                int read = BinMerge(readPrev,readNew);
+                ;;( A << bitCount(B) ) + B;
+                int read = (readPrev << bitCount(readNew) ) + readNew;
+                ;;int read = BinMerge(readPrev,readNew);
             
                 if (read == flag){
                 
@@ -138,8 +130,8 @@ tuple cdr(tuple list) asm "CDR";
                     (stack_res, StackLen) = AddBits(stack_res,StackLen,value,lenValue);
                 } else {
                     BitNumprev += 1;
-                    int t = prevBlock~load_uint(1);
-                    (stack_res, StackLen) = AddBits(stack_res, StackLen, t,1);
+                    ;;int t = prevBlock~load_uint(1);
+                    (stack_res, StackLen) = AddBits(stack_res, StackLen, prevBlock~load_uint(1) ,1);
                 }
             }
             
@@ -153,12 +145,10 @@ tuple cdr(tuple list) asm "CDR";
                     
                     (stack_res, StackLen) = AddBits(stack_res, StackLen ,value,lenValue);
                 } else {
-                    ;;    ~dump(bitNum);
-                    ;;  ~dump(s);
                     bitNum += 1;
-                    int t = s~load_uint(1);
+                    ;;int t = s~load_uint(1);
                     
-                    (stack_res, StackLen) = AddBits(stack_res, StackLen, t,1);
+                    (stack_res, StackLen) = AddBits(stack_res, StackLen, s~load_uint(1) ,1);
                 }
             } else { ;;block cant be read till end, leaving it for nex cycle
                 prevBlock = s;
@@ -170,8 +160,8 @@ tuple cdr(tuple list) asm "CDR";
     }
     int sizePrev = prevBlock.slice_bits();
     if (sizePrev != 0){
-        int t = prevBlock~load_uint(sizePrev);
-        (stack_res, StackLen) = AddBits(stack_res, StackLen ,t , sizePrev);
+        ;;int t = prevBlock~load_uint(sizePrev);
+        (stack_res, StackLen) = AddBits(stack_res, StackLen ,prevBlock~load_uint(sizePrev) , sizePrev);
     }
     cell result = CombineBlocks(stack_res,StackLen);
     slice s = result.begin_parse();
