@@ -96,6 +96,8 @@ forall X -> tuple cons(X head, tuple tail) asm "CONS";
 
 tuple cdr(tuple list) asm "CDR";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
+    ~dump(value);
+    ~dump(flag);
     tuple stack_res = null();
     builder bldr = begin_cell();
     stack_res = bldr.cons(stack_res);
@@ -116,7 +118,6 @@ tuple cdr(tuple list) asm "CDR";
         int maxLen = s.slice_bits();
         int sizePrev = prevBlock.slice_bits();
         int BitNumprev = 0;
-        
         while (~ s.slice_empty?() ){
             
             while (~ prevBlock.slice_empty?()){ ;;reading prev block
@@ -124,7 +125,7 @@ tuple cdr(tuple list) asm "CDR";
                 
             
                 int readPrev = prevBlock.preload_uint(sizePrev - BitNumprev);
-                ;; ~dump(lenFlag);
+                ;;~dump(lenFlag);
                 ;;~dump(sizePrev);
                 ;;~dump(BitNumprev);
                 int readNew = s.preload_uint(lenFlag - (sizePrev - BitNumprev));
@@ -146,13 +147,17 @@ tuple cdr(tuple list) asm "CDR";
                 int read = s.preload_uint(lenFlag);
                 
                 if (read == flag){
+                    
                     bitNum += lenFlag;
                     s~skip_bits(lenFlag);
                     
                     (stack_res, StackLen) = AddBits(stack_res, StackLen ,value,lenValue);
                 } else {
+                    ;;    ~dump(bitNum);
+                    ;;  ~dump(s);
                     bitNum += 1;
                     int t = s~load_uint(1);
+                    
                     (stack_res, StackLen) = AddBits(stack_res, StackLen, t,1);
                 }
             } else { ;;block cant be read till end, leaving it for nex cycle
