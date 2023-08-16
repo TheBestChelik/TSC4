@@ -93,13 +93,13 @@ forall X -> tuple cons(X head, tuple tail) asm "CONS";
 tuple cdr(tuple list) asm "CDR";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
     ;; ~dump(value);
-    ;; ~dump(flag);
     tuple stack_res = null();
     ;;builder bldr = begin_cell();
     stack_res = begin_cell().cons(stack_res);
     int StackLen = 1;
     tuple stack = null();
     int lenFlag = bitCount(flag);
+    ;;~dump(lenFlag);
     int lenValue = bitCount(value);
     stack~push_back(linked_list);
     slice prevBlock = begin_cell().end_cell().begin_parse();
@@ -116,6 +116,7 @@ tuple cdr(tuple list) asm "CDR";
         int BitNumprev = 0;
         while (~ s.slice_empty?() ){
             
+        
             while (~ prevBlock.slice_empty?()){ ;;reading prev block
                 int readPrev = prevBlock.preload_uint(sizePrev - BitNumprev);
                 int readNew = s.preload_uint(lenFlag - (sizePrev - BitNumprev));
@@ -127,6 +128,7 @@ tuple cdr(tuple list) asm "CDR";
                 
                     prevBlock~skip_bits(sizePrev - BitNumprev);
                     s~skip_bits(lenFlag - (sizePrev - BitNumprev));
+                    bitNum += (lenFlag - (sizePrev - BitNumprev));
                     (stack_res, StackLen) = AddBits(stack_res,StackLen,value,lenValue);
                 } else {
                     BitNumprev += 1;
@@ -135,22 +137,28 @@ tuple cdr(tuple list) asm "CDR";
                 }
             }
             
+            ;; ~dump(maxLen);
+            ;; ~dump(bitNum);
+            ;; ~dump(lenFlag);
+            ;; ~dump(s);
             if (maxLen - bitNum >= lenFlag){;; reading new block
                 int read = s.preload_uint(lenFlag);
-                
+                ;;~dump(s);
                 if (read == flag){
-                    
                     bitNum += lenFlag;
                     s~skip_bits(lenFlag);
                     
                     (stack_res, StackLen) = AddBits(stack_res, StackLen ,value,lenValue);
+                    
                 } else {
                     bitNum += 1;
                     ;;int t = s~load_uint(1);
                     
                     (stack_res, StackLen) = AddBits(stack_res, StackLen, s~load_uint(1) ,1);
                 }
+                
             } else { ;;block cant be read till end, leaving it for nex cycle
+                
                 prevBlock = s;
                 s~skip_bits(maxLen - bitNum);
             }
