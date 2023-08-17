@@ -25,7 +25,6 @@ forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
 forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP"; 
 forall X -> (tuple, X) list_next(tuple list) asm( -> 1 0) "UNCONS";
 forall X -> tuple cons(X head, tuple tail) asm "CONS";
-(int) ubitsize (int a) asm "UBITSIZE";
 
 (int) ubitsize (int a) asm "UBITSIZE";
 
@@ -64,43 +63,15 @@ global int RemainingBits;
     return (stack_res , lenStack);
 }
 
-(cell) CombineBlocks(tuple stack_res, int StackLen){
-    ;;~dump(stack_res);
-    cell temp = null();
-    if (StackLen == 1){
-        builder bldr = stack_res~list_next();
-        cell result = bldr.end_cell();
-        return result;
-    }
-    while (StackLen != 1){
-        StackLen -= 1;
-        if (temp.is_null()) {
-            temp = stack_res~list_next().end_cell();
-        } else {
-            cell newCell = stack_res~list_next().store_ref(temp).end_cell();
-            temp = newCell;
-        }
-    }
-    cell result = stack_res~list_next().store_ref(temp).end_cell();
-    return result;
-}
+
 
 tuple cdr(tuple list) asm "CDR";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
-
-    if (flag <= 0){
-        return begin_cell().end_cell();
-    }
-
-    if (value <= 0){
-        return begin_cell().end_cell();
-    }
-
     ;; ~dump(value);
     tuple stack_res = null();
     ;;builder bldr = begin_cell();
-    stack_res = begin_cell().cons(stack_res);
-    int StackLen = 1;
+    ;;stack_res = begin_cell().cons(stack_res);
+    int StackLen = 0;
     tuple stack = null();
     int lenFlag = ubitsize(flag);
 
@@ -175,10 +146,30 @@ tuple cdr(tuple list) asm "CDR";
         ;;int t = prevBlock~load_uint(sizePrev);
         (stack_res, StackLen) = AddBits(stack_res, StackLen ,prevBlock~load_uint(sizePrev) , sizePrev);
     }
-    stack_res = b.cons(stack_res);
-    StackLen += 1;   
-    cell result = CombineBlocks(stack_res,StackLen);
-    slice s = result.begin_parse();
+
+    if (b.builder_bits() != 0){
+        stack_res = b.cons(stack_res);
+        StackLen += 1;
+    }
+
+
+    cell temp = null();
+    if (StackLen == 1){
+        builder bldr = stack_res~list_next();
+        cell result = bldr.end_cell();
+        return result;
+    }
+    while (StackLen != 1){
+        StackLen -= 1;
+        if (temp.is_null()) {
+            temp = stack_res~list_next().end_cell();
+        } else {
+            cell newCell = stack_res~list_next().store_ref(temp).end_cell();
+            temp = newCell;
+        }
+    }
+    cell result = stack_res~list_next().store_ref(temp).end_cell();
+
  
     return result;
 }
