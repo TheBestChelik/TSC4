@@ -73,8 +73,16 @@ tuple cdr(tuple list) asm "CDR";
     int StackLen = 0;
     tuple stack = null();
     int lenFlag = ubitsize(flag);
-
     int lenValue = ubitsize(value);
+    if( flag == 0){
+        lenFlag = 1;
+    }
+    if ( value == 0){
+        lenValue = 1;
+    }
+    
+    
+    
     stack~push_back(linked_list);
     slice prevBlock = begin_cell().end_cell().begin_parse();
 
@@ -84,7 +92,7 @@ tuple cdr(tuple list) asm "CDR";
 
     while (~ stack.is_null()) {
         slice s = stack~pop_back().begin_parse();
-
+        
         repeat (s.slice_refs()) {
             stack~push_back(s~load_ref());
         }
@@ -94,8 +102,7 @@ tuple cdr(tuple list) asm "CDR";
         int sizePrev = prevBlock.slice_bits();
         int BitNumprev = 0;
         while (~ s.slice_empty?() ){
-
-        
+                   
             while (~ prevBlock.slice_empty?()){ ;;reading prev block
                 int readPrev = prevBlock.preload_uint(sizePrev - BitNumprev);
                 int readNew = s.preload_uint(lenFlag - (sizePrev - BitNumprev));
@@ -116,11 +123,12 @@ tuple cdr(tuple list) asm "CDR";
             
             if (maxLen - bitNum >= lenFlag){;; reading new block
                 int read = s.preload_uint(lenFlag);
-                ;;~dump(s);
+                
                 if (read == flag){
                     bitNum += lenFlag;
                     s~skip_bits(lenFlag);
-                    
+                    ;; ~dump(s);
+                    ;; ~dump(bitNum);
                     (stack_res, StackLen) = AddBits(stack_res, StackLen ,value,lenValue);
                     
                 } else {
