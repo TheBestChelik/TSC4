@@ -87,6 +87,15 @@ global int RemainingBits;
 
 tuple cdr(tuple list) asm "CDR";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
+
+    if (flag <= 0){
+        return begin_cell().end_cell();
+    }
+
+    if (value <= 0){
+        return begin_cell().end_cell();
+    }
+
     ;; ~dump(value);
     tuple stack_res = null();
     ;;builder bldr = begin_cell();
