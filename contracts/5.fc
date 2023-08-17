@@ -26,7 +26,6 @@
   while (i < n + k ) {
     if (i >= n) {
       fib~tpush(a);
-            
     }
     int temp = a;
     a = b;

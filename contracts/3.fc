@@ -25,17 +25,7 @@ forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
 forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP"; 
 forall X -> (tuple, X) list_next(tuple list) asm( -> 1 0) "UNCONS";
 forall X -> tuple cons(X head, tuple tail) asm "CONS";
-(int) bitCount(int n){
-    if (n == 0){
-        return 1;
-    }
-    int bit_count = 0;
-    while( n > 0 ){
-        bit_count += 1;
-        n = n >> 1;
-    }
-    return bit_count;
-}
+(int) ubitsize (int a) asm "UBITSIZE";
 
 (int, int) SeparateBits(int num, int len1, int len2){
     int first_bit_mask = ( 1 << len1 ) - 1;
@@ -64,7 +54,7 @@ forall X -> tuple cons(X head, tuple tail) asm "CONS";
 }
 
 (int) BinMerge (int A, int B){
-    return ( A << bitCount(B) ) + B;
+    return ( A << ubitsize(B) ) + B;
 }
 
 
@@ -98,9 +88,9 @@ tuple cdr(tuple list) asm "CDR";
     stack_res = begin_cell().cons(stack_res);
     int StackLen = 1;
     tuple stack = null();
-    int lenFlag = bitCount(flag);
+    int lenFlag = ubitsize(flag);
 
-    int lenValue = bitCount(value);
+    int lenValue = ubitsize(value);
     stack~push_back(linked_list);
     slice prevBlock = begin_cell().end_cell().begin_parse();
     while (~ stack.is_null()) {
@@ -121,7 +111,7 @@ tuple cdr(tuple list) asm "CDR";
                 int readPrev = prevBlock.preload_uint(sizePrev - BitNumprev);
                 int readNew = s.preload_uint(lenFlag - (sizePrev - BitNumprev));
                 ;;( A << bitCount(B) ) + B;
-                int read = (readPrev << bitCount(readNew) ) + readNew;
+                int read = (readPrev << ( lenFlag - (sizePrev - BitNumprev) ) ) + readNew;
                 ;;int read = BinMerge(readPrev,readNew);
                 if (read == flag){
                     prevBlock~skip_bits(sizePrev - BitNumprev);
