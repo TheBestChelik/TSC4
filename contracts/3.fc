@@ -53,6 +53,7 @@ global int RemainingBits;
         b~store_uint(n1, RemainingBits);
         stack_res = b.cons(stack_res);
         b = begin_cell().store_uint(n2, len - RemainingBits);
+        ;;~dump(b);
         ;;RemBits = 1023 - (len - RemBits)
         RemainingBits += 1023 - len;
         ;;builder newBuilder = begin_cell().store_uint(n2, len - ReamainingBits);
