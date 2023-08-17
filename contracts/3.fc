@@ -27,37 +27,21 @@ forall X -> (tuple, X) list_next(tuple list) asm( -> 1 0) "UNCONS";
 forall X -> tuple cons(X head, tuple tail) asm "CONS";
 (int) ubitsize (int a) asm "UBITSIZE";
 
-(int, int) SeparateBits(int num, int len1, int len2){
-    int first_bit_mask = ( 1 << len1 ) - 1;
-    int second_bits_mask = ( 1 << len2 ) - 1;
-    int part1 = ( num >> len2 ) & first_bit_mask;
-    int part2 = num & second_bits_mask;
-    return  (part1, part2);
-}
-
-
+(int) ubitsize (int a) asm "UBITSIZE";
 global builder b;
 global int RemainingBits;
 
 (tuple, int) AddBits(tuple stack_res, int lenStack, int newBits, int len){
-    ;;builder b = stack_res~list_next();
-    ;;int ReamainingBits = 1023 - b.builder_bits();
+
     if ( RemainingBits >= len ){
         b~store_uint(newBits, len);
         RemainingBits -= len; 
-        ;;    stack_res = b.cons(stack_res);
+
     } else {
-        int n1 = 0;
-        int n2 = 0;
-        (n1, n2) = SeparateBits(newBits,RemainingBits, len - RemainingBits);
-        b~store_uint(n1, RemainingBits);
         stack_res = b.cons(stack_res);
-        b = begin_cell().store_uint(n2, len - RemainingBits);
-        ;;~dump(b);
-        ;;RemBits = 1023 - (len - RemBits)
-        RemainingBits += 1023 - len;
-        ;;builder newBuilder = begin_cell().store_uint(n2, len - ReamainingBits);
-        ;;stack_res = newBuilder.cons(stack_res);
+        b = begin_cell().store_uint(newBits, len);
+
+        RemainingBits = 1023 - len;
         lenStack += 1;
     }
     return (stack_res , lenStack);
@@ -69,8 +53,7 @@ tuple cdr(tuple list) asm "CDR";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
     ;; ~dump(value);
     tuple stack_res = null();
-    ;;builder bldr = begin_cell();
-    ;;stack_res = begin_cell().cons(stack_res);
+
     int StackLen = 0;
     tuple stack = null();
     int lenFlag = ubitsize(flag);
