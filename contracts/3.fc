@@ -25,7 +25,6 @@ forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
 forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP"; 
 forall X -> (tuple, X) list_next(tuple list) asm( -> 1 0) "UNCONS";
 forall X -> tuple cons(X head, tuple tail) asm "CONS";
-
 (int) ubitsize (int a) asm "UBITSIZE";
 
 (int, int) SeparateBits(int num, int len1, int len2){
@@ -151,8 +150,10 @@ tuple cdr(tuple list) asm "CDR";
         stack_res = b.cons(stack_res);
         StackLen += 1;
     }
-
-
+    if (StackLen  == 0){
+        return begin_cell().end_cell();
+    }
+    
     cell temp = null();
     if (StackLen == 1){
         builder bldr = stack_res~list_next();
