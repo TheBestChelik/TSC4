@@ -25,9 +25,10 @@ forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
 forall X -> (tuple, X) ~tpop (tuple t) asm "TPOP"; 
 forall X -> (tuple, X) list_next(tuple list) asm( -> 1 0) "UNCONS";
 forall X -> tuple cons(X head, tuple tail) asm "CONS";
+tuple cdr(tuple list) asm "CDR";
 (int) ubitsize (int a) asm "UBITSIZE";
 
-(int) ubitsize (int a) asm "UBITSIZE";
+
 global builder b;
 global int RemainingBits;
 
@@ -47,9 +48,6 @@ global int RemainingBits;
     return (stack_res , lenStack);
 }
 
-
-
-tuple cdr(tuple list) asm "CDR";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
     ;; ~dump(value);
     tuple stack_res = null();
@@ -64,9 +62,7 @@ tuple cdr(tuple list) asm "CDR";
     if ( value == 0){
         lenValue = 1;
     }
-    
-    
-    
+
     stack~push_back(linked_list);
     slice prevBlock = begin_cell().end_cell().begin_parse();
 
@@ -96,8 +92,6 @@ tuple cdr(tuple list) asm "CDR";
                     s~skip_bits(lenFlag - (sizePrev - BitNumprev));
                     bitNum += (lenFlag - (sizePrev - BitNumprev));
 
-
-
                     (stack_res, StackLen) = AddBits(stack_res,StackLen,value,lenValue);
                 } else {
                     BitNumprev += 1;
@@ -111,13 +105,12 @@ tuple cdr(tuple list) asm "CDR";
                 if (read == flag){
                     bitNum += lenFlag;
                     s~skip_bits(lenFlag);
-                    ;; ~dump(s);
-                    ;; ~dump(bitNum);
+
                     (stack_res, StackLen) = AddBits(stack_res, StackLen ,value,lenValue);
                     
                 } else {
                     bitNum += 1;
-                    ;;int t = s~load_uint(1);
+
                     
                     (stack_res, StackLen) = AddBits(stack_res, StackLen, s~load_uint(1) ,1);
                 }
@@ -128,7 +121,6 @@ tuple cdr(tuple list) asm "CDR";
                 s~skip_bits(maxLen - bitNum);
             }
 
-            
         }
         
     }
