@@ -35,12 +35,6 @@ tuple cdr(tuple list) asm "CDR";
 
     int lenFlag = ubitsize(flag);
     int lenValue = ubitsize(value);
-    if (lenFlag == 0){
-        lenFlag = 1;
-    }
-    if (lenValue == 0){
-        lenValue = 1;
-    }
 
     slice newList = linked_list.begin_parse();
     int len = newList.slice_bits();
