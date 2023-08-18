@@ -52,12 +52,6 @@ global int RemainingBits;
 
 tuple cdr(tuple list) asm "CDR";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
-    ;; ~dump(value);
-
-    slice newList = linked_list.begin_parse();
-    repeat (newList.slice_refs()) {
-        newList~load_ref();
-    }
 
 
 
@@ -69,14 +63,16 @@ tuple cdr(tuple list) asm "CDR";
     tuple stack = null();
     int lenFlag = ubitsize(flag);
     int lenValue = ubitsize(value);
-    if( flag == 0){
-        lenFlag = 1;
-    }
-    if ( value == 0){
-        lenValue = 1;
-    }
+    ;; if( flag == 0){
+    ;;     lenFlag = 1;
+    ;; }
+    ;; if ( value == 0){
+    ;;     lenValue = 1;
+    ;; }
+
+
+    slice newList = linked_list.begin_parse();
     int len = newList.slice_bits();
-    ;;~dump(len);
     if (len < lenFlag){
         return linked_list;
     }
