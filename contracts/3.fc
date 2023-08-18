@@ -54,6 +54,8 @@ tuple cdr(tuple list) asm "CDR";
     tuple stack_res = null();
     int stackLen = 0;
 
+
+    builder curr_cell = begin_cell();
     while (~ stack.is_null()) {
         slice s = stack~pop_back().begin_parse();
         
@@ -64,7 +66,7 @@ tuple cdr(tuple list) asm "CDR";
         int maxLen = s.slice_bits();
         int sizePrev = prevBlock.slice_bits();
         int BitNumprev = 0;
-        builder curr_cell = begin_cell();
+ 
         while (~ s.slice_empty?()){
              
             while (~ prevBlock.slice_empty?()){ ;;reading prev block
@@ -138,15 +140,21 @@ tuple cdr(tuple list) asm "CDR";
 
             }
         }
-        stack_res = curr_cell.cons(stack_res);
-
-        stackLen += 1;
     }
     if (~ prevBlock.slice_empty?()){
-        builder c = begin_cell().store_slice(prevBlock);
-        stack_res = c.cons(stack_res);
+        if (curr_cell.builder_bits() + prevBlock.slice_bits() < 1023){
+            curr_cell~store_slice(prevBlock);
+            stack_res = curr_cell.cons(stack_res);
 
-        stackLen += 1;
+            stackLen += 1;
+        } else {
+            stack_res = curr_cell.cons(stack_res);
+            builder c = begin_cell().store_slice(prevBlock);
+            stack_res = c.cons(stack_res);
+
+            stackLen += 2;
+        }
+        
     }
 
     cell temp = null();
