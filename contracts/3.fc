@@ -48,8 +48,21 @@ global int RemainingBits;
     return (stack_res , lenStack);
 }
 
+
+
+tuple cdr(tuple list) asm "CDR";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
     ;; ~dump(value);
+
+    slice newList = linked_list.begin_parse();
+    repeat (newList.slice_refs()) {
+        newList~load_ref();
+    }
+
+
+
+
+
     tuple stack_res = null();
 
     int StackLen = 0;
@@ -62,7 +75,13 @@ global int RemainingBits;
     if ( value == 0){
         lenValue = 1;
     }
-
+    int len = newList.slice_bits();
+    ;;~dump(len);
+    if (len < lenFlag){
+        return linked_list;
+    }
+    
+    
     stack~push_back(linked_list);
     slice prevBlock = begin_cell().end_cell().begin_parse();
 
@@ -92,6 +111,8 @@ global int RemainingBits;
                     s~skip_bits(lenFlag - (sizePrev - BitNumprev));
                     bitNum += (lenFlag - (sizePrev - BitNumprev));
 
+
+
                     (stack_res, StackLen) = AddBits(stack_res,StackLen,value,lenValue);
                 } else {
                     BitNumprev += 1;
@@ -105,12 +126,13 @@ global int RemainingBits;
                 if (read == flag){
                     bitNum += lenFlag;
                     s~skip_bits(lenFlag);
-
+                    ;; ~dump(s);
+                    ;; ~dump(bitNum);
                     (stack_res, StackLen) = AddBits(stack_res, StackLen ,value,lenValue);
                     
                 } else {
                     bitNum += 1;
-
+                    ;;int t = s~load_uint(1);
                     
                     (stack_res, StackLen) = AddBits(stack_res, StackLen, s~load_uint(1) ,1);
                 }
@@ -121,6 +143,7 @@ global int RemainingBits;
                 s~skip_bits(maxLen - bitNum);
             }
 
+            
         }
         
     }
