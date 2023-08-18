@@ -61,15 +61,7 @@ tuple cdr(tuple list) asm "CDR";
 
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
     int flag_len = ubitsize(flag);
-    
     int val_len = ubitsize(value);
-    
-    if (flag == 0){
-        flag_len = 1;
-    }
-    if (value == 0){
-        val_len = 1;
-    }
     slice flag_sl = begin_cell().store_uint(flag, flag_len).end_cell().begin_parse();
     slice val_sl = begin_cell().store_uint(value, val_len).end_cell().begin_parse();
 
