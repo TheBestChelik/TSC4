@@ -140,7 +140,4 @@ tuple cdr(tuple list) asm "CDR";
         .store_ref(result).end_cell();
     }
     return result;
-
-
-    
 }
