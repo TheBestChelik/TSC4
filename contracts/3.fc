@@ -29,61 +29,16 @@ tuple cdr(tuple list) asm "CDR";
 (int) ubitsize (int a) asm "UBITSIZE";
 
 
-global builder b;
-global int RemainingBits;
-
-(tuple, int) AddBits(tuple stack_res, int lenStack, int newBits, int len){
-
-    if ( RemainingBits >= len ){
-        b~store_uint(newBits, len);
-        RemainingBits -= len; 
-
-    } else {
-        stack_res = b.cons(stack_res);
-        b = begin_cell().store_uint(newBits, len);
-
-        RemainingBits = 1023 - len;
-        lenStack += 1;
-    }
-    return (stack_res , lenStack);
-}
-
-
-
-tuple cdr(tuple list) asm "CDR";
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
 
-
-
-
-
-    tuple stack_res = null();
-
-    int StackLen = 0;
     tuple stack = null();
     int lenFlag = ubitsize(flag);
     int lenValue = ubitsize(value);
-    ;; if( flag == 0){
-    ;;     lenFlag = 1;
-    ;; }
-    ;; if ( value == 0){
-    ;;     lenValue = 1;
-    ;; }
-
-
-    slice newList = linked_list.begin_parse();
-    int len = newList.slice_bits();
-    if (len < lenFlag){
-        return linked_list;
-    }
-    
-    
     stack~push_back(linked_list);
     slice prevBlock = begin_cell().end_cell().begin_parse();
 
-    b = begin_cell();
-    RemainingBits = 1023;
-
+    tuple stack_res = null();
+    int stackLen = 0;
 
     while (~ stack.is_null()) {
         slice s = stack~pop_back().begin_parse();
@@ -91,13 +46,13 @@ tuple cdr(tuple list) asm "CDR";
         repeat (s.slice_refs()) {
             stack~push_back(s~load_ref());
         }
-        
         int bitNum = 0;
         int maxLen = s.slice_bits();
         int sizePrev = prevBlock.slice_bits();
         int BitNumprev = 0;
-        while (~ s.slice_empty?() ){
-                   
+        builder curr_cell = begin_cell();
+        while (~ s.slice_empty?()){
+             
             while (~ prevBlock.slice_empty?()){ ;;reading prev block
                 int readPrev = prevBlock.preload_uint(sizePrev - BitNumprev);
                 int readNew = s.preload_uint(lenFlag - (sizePrev - BitNumprev));
@@ -107,73 +62,101 @@ tuple cdr(tuple list) asm "CDR";
                     s~skip_bits(lenFlag - (sizePrev - BitNumprev));
                     bitNum += (lenFlag - (sizePrev - BitNumprev));
 
-
-
-                    (stack_res, StackLen) = AddBits(stack_res,StackLen,value,lenValue);
+                    if (curr_cell.builder_bits() + lenValue <= 1023){
+                        stack_res = curr_cell.store_uint(value, lenValue).cons(stack_res);
+                        curr_cell = begin_cell();
+                        stackLen += 1;
+                    } else {
+                        stack_res = curr_cell.cons(stack_res);
+                        curr_cell = begin_cell().store_uint(value, lenValue);
+                        stackLen += 1;
+                    }
+                    
                 } else {
                     BitNumprev += 1;
-                    (stack_res, StackLen) = AddBits(stack_res, StackLen, prevBlock~load_uint(1) ,1);
+                    if (curr_cell.builder_bits() < 1023){
+                        curr_cell~store_uint(prevBlock~load_uint(1), 1);
+                    } else {
+                        stack_res = curr_cell.cons(stack_res);
+                        curr_cell = begin_cell().store_uint(prevBlock~load_uint(1), 1);
+                        stackLen += 1;
+                    }
                 }
             }
             
-            if (maxLen - bitNum >= lenFlag){;; reading new block
+            if (maxLen - bitNum >= lenFlag){
+                ;;if (s.slice_bits() >= lenFlag){
+
                 int read = s.preload_uint(lenFlag);
                 
                 if (read == flag){
-                    bitNum += lenFlag;
-                    s~skip_bits(lenFlag);
-                    ;; ~dump(s);
-                    ;; ~dump(bitNum);
-                    (stack_res, StackLen) = AddBits(stack_res, StackLen ,value,lenValue);
                     
+                    s~skip_bits(lenFlag);
+                    bitNum += lenFlag;
+
+                    if (curr_cell.builder_bits() + lenValue <= 1023){
+                        stack_res = curr_cell.store_uint(value, lenValue).cons(stack_res);
+                        curr_cell = begin_cell();
+                        stackLen += 1;
+                    } else {
+                        stack_res = curr_cell.cons(stack_res);
+                        curr_cell = begin_cell().store_uint(value, lenValue);
+                        stackLen += 1;
+                    }
+ 
                 } else {
                     bitNum += 1;
-                    ;;int t = s~load_uint(1);
+                    if (curr_cell.builder_bits() < 1023){
+                        curr_cell~store_uint(s~load_uint(1), 1);
+                    } else {
+                        stack_res = curr_cell.cons(stack_res);
+                        curr_cell = begin_cell().store_uint(s~load_uint(1), 1);
+                        stackLen += 1;
+                    }
                     
-                    (stack_res, StackLen) = AddBits(stack_res, StackLen, s~load_uint(1) ,1);
                 }
-                
-            } else { ;;block cant be read till end, leaving it for nex cycle
+            } else {
                 
                 prevBlock = s;
+
+
                 s~skip_bits(maxLen - bitNum);
+
             }
-
-            
         }
-        
+        stack_res = curr_cell.cons(stack_res);
+
+        stackLen += 1;
     }
-    int sizePrev = prevBlock.slice_bits();
-    if (sizePrev != 0){
-        ;;int t = prevBlock~load_uint(sizePrev);
-        (stack_res, StackLen) = AddBits(stack_res, StackLen ,prevBlock~load_uint(sizePrev) , sizePrev);
+    if (~ prevBlock.slice_empty?()){
+        builder c = begin_cell().store_slice(prevBlock);
+        stack_res = c.cons(stack_res);
+
+        stackLen += 1;
     }
 
-    if (b.builder_bits() != 0){
-        stack_res = b.cons(stack_res);
-        StackLen += 1;
-    }
-    if (StackLen  == 0){
-        return begin_cell().end_cell();
-    }
-    
     cell temp = null();
-    if (StackLen == 1){
+    if (stackLen == 1){
         builder bldr = stack_res~list_next();
         cell result = bldr.end_cell();
         return result;
     }
-    while (StackLen != 1){
-        StackLen -= 1;
+    ;;~dump(stack_res);
+    ;;~dump(stackLen);
+  
+    while (stackLen != 1){
+        stackLen -= 1;
         if (temp.is_null()) {
             temp = stack_res~list_next().end_cell();
         } else {
             cell newCell = stack_res~list_next().store_ref(temp).end_cell();
+            int deep = newCell.cell_depth();
+
             temp = newCell;
         }
     }
     cell result = stack_res~list_next().store_ref(temp).end_cell();
 
- 
+
     return result;
 }
