@@ -80,9 +80,7 @@ tuple cdr(tuple list) asm "CDR";
                     bitNum += (lenFlag - (sizePrev - BitNumprev));
 
                     if (curr_cell.builder_bits() + lenValue <= 1023){
-                        stack_res = curr_cell.store_uint(value, lenValue).cons(stack_res);
-                        curr_cell = begin_cell();
-                        stackLen += 1;
+                        curr_cell~store_uint(value, lenValue);
                     } else {
                         stack_res = curr_cell.cons(stack_res);
                         curr_cell = begin_cell().store_uint(value, lenValue);
@@ -112,9 +110,7 @@ tuple cdr(tuple list) asm "CDR";
                     bitNum += lenFlag;
 
                     if (curr_cell.builder_bits() + lenValue <= 1023){
-                        stack_res = curr_cell.store_uint(value, lenValue).cons(stack_res);
-                        curr_cell = begin_cell();
-                        stackLen += 1;
+                        curr_cell~store_uint(value, lenValue);
                     } else {
                         stack_res = curr_cell.cons(stack_res);
                         curr_cell = begin_cell().store_uint(value, lenValue);
@@ -173,14 +169,13 @@ tuple cdr(tuple list) asm "CDR";
             stackLen += 1;
         }
     }
-    ~dump(stack_res);
     cell temp = null();
     if (stackLen == 1){
         builder bldr = stack_res~list_next();
         cell result = bldr.end_cell();
         return result;
     }
-  
+
     while (stackLen != 1){
         stackLen -= 1;
         if (temp.is_null()) {
