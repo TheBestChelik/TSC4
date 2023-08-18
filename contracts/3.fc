@@ -56,6 +56,7 @@ tuple cdr(tuple list) asm "CDR";
 
 
     builder curr_cell = begin_cell();
+
     while (~ stack.is_null()) {
         slice s = stack~pop_back().begin_parse();
         
@@ -68,7 +69,7 @@ tuple cdr(tuple list) asm "CDR";
         int BitNumprev = 0;
  
         while (~ s.slice_empty?()){
-             
+            
             while (~ prevBlock.slice_empty?()){ ;;reading prev block
                 int readPrev = prevBlock.preload_uint(sizePrev - BitNumprev);
                 int readNew = s.preload_uint(lenFlag - (sizePrev - BitNumprev));
@@ -141,22 +142,38 @@ tuple cdr(tuple list) asm "CDR";
             }
         }
     }
-    if (~ prevBlock.slice_empty?()){
-        if (curr_cell.builder_bits() + prevBlock.slice_bits() < 1023){
-            curr_cell~store_slice(prevBlock);
+    int b_size = curr_cell.builder_bits();
+    if (b_size != 1023){
+        if (~ prevBlock.slice_empty?()){
+            int size = prevBlock.slice_bits();
+            int t = prevBlock~load_uint(size);
+            if (curr_cell.builder_bits() + size <= 1023){
+                curr_cell~store_uint(t, size);
+                stack_res = curr_cell.cons(stack_res);
+
+                stackLen += 1;
+            } else {
+                stack_res = curr_cell.cons(stack_res);
+                curr_cell = begin_cell().store_uint(t, size);
+                stack_res = curr_cell.cons(stack_res);
+
+                stackLen += 2;
+            }
+        } else {
             stack_res = curr_cell.cons(stack_res);
 
             stackLen += 1;
-        } else {
-            stack_res = curr_cell.cons(stack_res);
-            builder c = begin_cell().store_slice(prevBlock);
-            stack_res = c.cons(stack_res);
-
-            stackLen += 2;
         }
-        
+    } else {
+        if (~ prevBlock.slice_empty?()){
+            int size = prevBlock.slice_bits();
+            int t = prevBlock~load_uint(size);
+            curr_cell~store_uint(t, size);
+            stack_res = curr_cell.cons(stack_res);
+            stackLen += 1;
+        }
     }
-
+    ~dump(stack_res);
     cell temp = null();
     if (stackLen == 1){
         builder bldr = stack_res~list_next();
