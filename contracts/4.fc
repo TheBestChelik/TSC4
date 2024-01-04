@@ -71,8 +71,6 @@ forall X -> (tuple, X) list_next(tuple list) asm( -> 1 0) "UNCONS";
   return result;
 }
 
-;; testable
-;; testable
 forall X -> tuple cons(X head, tuple tail) asm "CONS";
 (cell) caesar_cipher_encrypt(int shift, cell text) method_id {
 
